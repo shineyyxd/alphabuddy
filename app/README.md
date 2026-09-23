@@ -26,11 +26,11 @@
 cp .env.example .env   # 填入 LLM_API_KEY / FUYAO_API_KEY / IFIND_AUTH_TOKEN
 # 后端
 cd backend && uv sync && uv run uvicorn app.main:app --port 8000
-# 前端
-cd frontend && npm install && npm run dev   # http://localhost:3000
+# 前端（生产模式）
+cd frontend && npm install && npm run build && npm run start   # http://localhost:3000
 ```
 
-无任何 Key 时 `ALLOW_FIXTURE_FALLBACK=true` 进入 fixture 回放模式（寒武纪案例可完整演示），数据源不可用的步骤会显式标红降级。
+无任何 Key 时 `ALLOW_FIXTURE_FALLBACK=true` 进入 fixture 回放模式（寒武纪案例可完整演示），数据源不可用的步骤会显式标红降级。公网部署见 [DEPLOY.md](./DEPLOY.md)（含隧道应急方案）。
 
 ## AI 的角色
 
