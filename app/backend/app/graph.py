@@ -161,11 +161,13 @@ async def planner(state: ResearchState) -> dict[str, Any]:
     if isinstance(decision, dict) and decision.get("action") == "edit" and decision.get("plan"):
         edited = []
         for i, s in enumerate(decision["plan"]):
+            tool = s.get("tool")
             edited.append({
                 "id": str(s.get("id") or f"s{i + 1}"),
                 "title": str(s.get("title") or ""),
-                "tool": s.get("tool"),
-                "params": dict(s.get("params") or {}),
+                "tool": tool,
+                # 客户端编辑计划可能不带 params，按工具补默认参数
+                "params": dict(s.get("params") or {}) or _default_params(tool, thscode),
                 "status": "pending",
             })
         steps = edited

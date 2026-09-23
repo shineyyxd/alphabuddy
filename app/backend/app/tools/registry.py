@@ -6,7 +6,7 @@ from typing import Any, Awaitable, Callable
 from ..config import Settings
 from ..cost import CostTracker
 from ..models import ToolEnvelope
-from .base import AuditLogger, BaseAPIClient, FixtureStore
+from .base import AuditLogger, BaseAPIClient, FixtureStore, err_envelope
 from .fuyao import FuyaoClient
 from .ifind import IFinDMCPClient
 
@@ -136,7 +136,16 @@ class ToolRegistry:
             raise KeyError(f"未知工具: {name}")
         fn: ToolFn = spec["fn"]
         start = time.monotonic()
-        envelope = await fn(**params)
+        try:
+            envelope = await fn(**params)
+        except TypeError as exc:
+            # 参数不匹配（如编辑后的计划缺参数）→ 错误信封，不打断整个研究流程
+            envelope = err_envelope(
+                source=spec.get("source", "unknown"),
+                kind="bad_params",
+                message=f"工具参数不匹配: {exc}",
+                auth="ok",
+            )
         latency_ms = int((time.monotonic() - start) * 1000)
         status = "ok" if envelope.error is None else "error"
         if envelope.error is None and not envelope.data:

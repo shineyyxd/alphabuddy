@@ -17,7 +17,7 @@
 |---|---|---|---|
 | 1 | 架构选型建议 fork deer-flow | 评估后其前端与研究流耦合过深，改造成本高于自建 | 候选人决断改为自建轻量 LangGraph 后端，deer-flow 仅作参照 |
 | 2 | 生成工具信封的 as_of 取值 | iFinD 证据卡时点显示为报告期代号"2026-2"而非日期 | 联调时对照证据卡四要素发现；修正 _guess_as_of 解包 JSON-RPC/MCP 包裹并优先取 period_end（2026-06-30） |
-| 3 | | | |
+| 3 | 实现计划审批的编辑分支 | 编辑后计划丢失工具参数（客户端只回传 id/title/tool），全任务崩溃 `missing required argument: 'thscode'` | T2 用例实测复现；修复：planner 编辑分支补默认参数 + registry 捕获 TypeError 转 bad_params 信封 |
 | 4 | | | |
 | 5 | | | |
 
