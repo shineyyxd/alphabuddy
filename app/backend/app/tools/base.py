@@ -158,7 +158,7 @@ class BaseAPIClient:
                     data = normalize(fx)
                     return ok_envelope(
                         data=data, source=self.source,
-                        as_of=as_of_hint or _guess_as_of(fx), unit=unit,
+                        as_of=_guess_as_of(fx) or as_of_hint, unit=unit,
                         caliber=caliber, auth="fixture",
                     )
             return err_envelope(
@@ -179,7 +179,7 @@ class BaseAPIClient:
             )
         return ok_envelope(
             data=normalize(raw), source=self.source,
-            as_of=as_of_hint or _guess_as_of(raw), unit=unit, caliber=caliber, auth="ok",
+            as_of=_guess_as_of(raw) or as_of_hint, unit=unit, caliber=caliber, auth="ok",
         )
 
     async def _degrade(
@@ -190,7 +190,7 @@ class BaseAPIClient:
             if fx is not None:
                 return ok_envelope(
                     data=normalize(fx), source=self.source,
-                    as_of=as_of_hint or _guess_as_of(fx), unit=unit, caliber=caliber,
+                    as_of=_guess_as_of(fx) or as_of_hint, unit=unit, caliber=caliber,
                     auth="fixture",
                 )
         return err_envelope(
@@ -200,7 +200,20 @@ class BaseAPIClient:
 
 
 def _guess_as_of(raw: dict[str, Any]) -> str | None:
+    # JSON-RPC / MCP 风格 {result:{content:[{text:"<json>"}]}} 逐层解包
+    if isinstance(raw, dict) and isinstance(raw.get("result"), dict):
+        raw = raw["result"]
+    content = raw.get("content") if isinstance(raw, dict) else None
+    if isinstance(content, list) and content and isinstance(content[0], dict):
+        text = content[0].get("text")
+        if isinstance(text, str):
+            try:
+                raw = json.loads(text)
+            except (json.JSONDecodeError, TypeError):
+                pass
     data = raw.get("data") if isinstance(raw, dict) else None
+    if data is None and isinstance(raw, dict):
+        data = raw
     if isinstance(data, dict):
         ts = data.get("timestamp")
         if ts:
@@ -210,6 +223,8 @@ def _guess_as_of(raw: dict[str, Any]) -> str | None:
             pe = items[0].get("period_end_ms")
             if pe:
                 return ms_to_date(pe)
+        if data.get("period_end"):
+            return str(data["period_end"])
         if data.get("report"):
             return str(data["report"])
     return None
