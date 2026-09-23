@@ -1,0 +1,21 @@
+{
+  "code": 0,
+  "message": "success",
+  "request_id": "fixture-688256-valuation",
+  "data": {
+    "timestamp": 1790128800000,
+    "total": 1,
+    "item": [
+      {
+        "thscode": "688256.SH",
+        "ticker": "688256",
+        "name": "寒武纪-U",
+        "pe_ttm": 118.6234,
+        "pe_mrq": 105.2210,
+        "pb_mrq": 32.4512,
+        "ps_ttm": 45.8973,
+        "pcf_ttm": -95.3318
+      }
+    ]
+  }
+}

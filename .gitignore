@@ -1,0 +1,7 @@
+app/backend/data/
+app/backend/.venv/
+app/frontend/node_modules/
+app/frontend/.next/
+**/.env
+deer-flow/
+.DS_Store

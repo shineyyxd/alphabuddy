@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"thscode\": \"688256.SH\", \"name\": \"寒武纪-U\", \"source_note\": \"fixture 录制样例\", \"announcements\": [{\"title\": \"寒武纪 2026 年半年度报告\", \"date\": \"2026-08-28\", \"pdf_url\": \"https://static.sse.com.cn/disclosure/listedinfo/announcement/fixture/688256_2026_half.pdf\"}, {\"title\": \"寒武纪 2026 年半年度报告摘要\", \"date\": \"2026-08-28\", \"pdf_url\": \"https://static.sse.com.cn/disclosure/listedinfo/announcement/fixture/688256_2026_half_abstract.pdf\"}, {\"title\": \"寒武纪关于 2026 年半年度募集资金存放与实际使用情况的专项报告\", \"date\": \"2026-08-28\", \"pdf_url\": \"https://static.sse.com.cn/disclosure/listedinfo/announcement/fixture/688256_2026_fund.pdf\"}]}"
+      }
+    ]
+  }
+}

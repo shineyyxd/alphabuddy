@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"thscode\": \"688256.SH\", \"name\": \"寒武纪-U\", \"source_note\": \"fixture 录制样例\", \"news\": [{\"title\": \"寒武纪上半年营收同比增长 108%，归母净利 23.11 亿元\", \"date\": \"2026-08-28\", \"source\": \"fixture-news\"}, {\"title\": \"AI 芯片需求景气延续，寒武纪毛利率环比基本持平\", \"date\": \"2026-09-01\", \"source\": \"fixture-news\"}]}"
+      }
+    ]
+  }
+}

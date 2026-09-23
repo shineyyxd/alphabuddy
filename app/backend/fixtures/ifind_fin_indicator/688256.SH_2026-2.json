@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"thscode\": \"688256.SH\", \"name\": \"寒武纪-U\", \"report\": \"2026-2\", \"period_end\": \"2026-06-30\", \"source_note\": \"fixture 录制：寒武纪 2026 年半年报已验证数据\", \"metrics\": [{\"key\": \"operating_income\", \"label\": \"营业总收入\", \"value\": 5996000000, \"unit\": \"元\", \"yoy_pct\": 108.13}, {\"key\": \"parent_holder_net_profit\", \"label\": \"归母净利润\", \"value\": 2311000000, \"unit\": \"元\", \"yoy_pct\": 122.61}, {\"key\": \"deducted_net_profit_yoy\", \"label\": \"扣非归母净利润同比\", \"value\": 137.30, \"unit\": \"%\"}, {\"key\": \"main_business_income_ratio\", \"label\": \"主营业务收入占营业总收入比例\", \"value\": 99.9995, \"unit\": \"%\"}, {\"key\": \"net_margin\", \"label\": \"净利率\", \"value\": 38.54, \"prior\": 36.02, \"unit\": \"%\"}, {\"key\": \"gross_margin\", \"label\": \"毛利率\", \"value\": 55.25, \"prior\": 55.93, \"unit\": \"%\"}, {\"key\": \"rd_expense_ratio\", \"label\": \"研发费用率\", \"value\": 11.72, \"prior\": 18.81, \"unit\": \"%\"}, {\"key\": \"investment_income\", \"label\": \"投资收益\", \"value\": 83000000, \"unit\": \"元\"}, {\"key\": \"other_income\", \"label\": \"其他收益\", \"value\": 167000000, \"unit\": \"元\"}, {\"key\": \"asset_impairment_loss\", \"label\": \"资产减值损失\", \"value\": 397000000, \"unit\": \"元\"}]}"
+      }
+    ]
+  }
+}

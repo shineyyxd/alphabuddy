@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-neutral-100 text-neutral-900;
+}
+
+/* Markdown 报告的基础排版（不引入 typography 插件，保持轻量） */
+.report-md h1 {
+  @apply text-xl font-bold mt-4 mb-2;
+}
+.report-md h2 {
+  @apply text-lg font-bold mt-4 mb-2 border-b border-neutral-200 pb-1;
+}
+.report-md h3 {
+  @apply text-base font-semibold mt-3 mb-1;
+}
+.report-md p {
+  @apply my-2 leading-relaxed text-sm;
+}
+.report-md ul,
+.report-md ol {
+  @apply my-2 pl-5 text-sm space-y-1;
+}
+.report-md ul {
+  @apply list-disc;
+}
+.report-md ol {
+  @apply list-decimal;
+}
+.report-md table {
+  @apply w-full text-xs my-3 border-collapse;
+}
+.report-md th,
+.report-md td {
+  @apply border border-neutral-300 px-2 py-1 text-left align-top;
+}
+.report-md th {
+  @apply bg-neutral-100 font-semibold;
+}
+.report-md code {
+  @apply bg-neutral-100 rounded px-1 text-xs;
+}
+.report-md a {
+  @apply text-blue-600 underline;
+}
+.report-md strong {
+  @apply font-semibold;
+}

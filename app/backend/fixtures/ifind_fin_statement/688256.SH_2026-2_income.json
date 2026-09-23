@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"thscode\": \"688256.SH\", \"name\": \"寒武纪-U\", \"report\": \"2026-2\", \"statement\": \"income\", \"source_note\": \"fixture 录制：寒武纪 2026 年半年报已验证数据\", \"current\": {\"period_end\": \"2026-06-30\", \"operating_income\": 5996000000, \"main_business_income\": 5995970020, \"operating_costs\": 2683200000, \"research_and_development_expenses\": 702700000, \"investment_income\": 83000000, \"other_income\": 167000000, \"asset_impairment_loss\": 397000000, \"operating_profit\": 2450000000, \"profit_total\": 2440000000, \"net_profit\": 2311000000, \"parent_holder_net_profit\": 2311000000}, \"prior_year_same_period\": {\"period_end\": \"2025-06-30\", \"operating_income\": 2881100000, \"operating_costs\": 1269700000, \"research_and_development_expenses\": 542000000, \"operating_profit\": 1120000000, \"net_profit\": 1038100000, \"parent_holder_net_profit\": 1038100000}}"
+      }
+    ]
+  }
+}

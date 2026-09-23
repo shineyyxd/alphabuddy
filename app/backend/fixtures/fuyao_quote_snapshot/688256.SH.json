@@ -1,0 +1,25 @@
+{
+  "code": 0,
+  "message": "success",
+  "request_id": "fixture-688256-snapshot",
+  "data": {
+    "timestamp": 1790128800000,
+    "total": 1,
+    "item": [
+      {
+        "thscode": "688256.SH",
+        "ticker": "688256",
+        "name": "寒武纪-U",
+        "volume": 12845670,
+        "turnover": 18562345800,
+        "last_price": 1445.0,
+        "price_change": 32.5,
+        "price_change_ratio_pct": 2.3015,
+        "open_price": 1418.0,
+        "high_price": 1462.8,
+        "low_price": 1405.2,
+        "prev_price": 1412.5
+      }
+    ]
+  }
+}
