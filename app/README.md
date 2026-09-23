@@ -32,6 +32,13 @@ cd frontend && npm install && npm run build && npm run start   # http://localhos
 
 无任何 Key 时 `ALLOW_FIXTURE_FALLBACK=true` 进入 fixture 回放模式（寒武纪案例可完整演示），数据源不可用的步骤会显式标红降级。公网部署见 [DEPLOY.md](./DEPLOY.md)（含隧道应急方案）。
 
+一键演示（后端 + 前端 + 临时公网隧道）：
+
+```bash
+app/scripts/demo.sh        # 启动并打印公网 URL
+app/scripts/demo.sh stop   # 全部停止
+```
+
 ## AI 的角色
 
 - 开发与架构：Kimi Code（K2/K3）全程 AI Coding；候选人负责架构决断、契约设计、数据验证与错误修正（见 [AI_LOG.md](./AI_LOG.md)）
