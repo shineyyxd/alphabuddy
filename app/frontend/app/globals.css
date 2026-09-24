@@ -8,7 +8,7 @@ body {
 }
 
 body {
-  @apply bg-neutral-100 text-neutral-900;
+  @apply bg-white text-neutral-900;
 }
 
 /* Markdown 报告的基础排版（不引入 typography 插件，保持轻量） */

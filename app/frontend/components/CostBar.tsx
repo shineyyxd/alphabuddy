@@ -6,7 +6,7 @@ function fmtElapsed(ms: number) {
   return s < 60 ? `${s.toFixed(1)}s` : `${Math.floor(s / 60)}m${Math.round(s % 60)}s`;
 }
 
-// 底部成本条：cost 事件驱动
+// 底部成本条：cost 事件驱动（差异化能力）
 export default function CostBar({ cost }: { cost: Cost | null }) {
   const c: Cost = cost ?? {
     tokens_in: 0,
@@ -25,12 +25,12 @@ export default function CostBar({ cost }: { cost: Cost | null }) {
     ["预算余量", c.budget_remaining.toLocaleString()],
   ];
   return (
-    <footer className="h-8 shrink-0 bg-neutral-900 text-neutral-300 flex items-center px-4 gap-5 text-xs overflow-x-auto">
-      <span className="text-neutral-500 shrink-0">成本</span>
+    <footer className="h-7 shrink-0 bg-neutral-50 border-t border-neutral-100 flex items-center px-4 gap-5 text-[11px] overflow-x-auto">
+      <span className="text-neutral-300 shrink-0">成本</span>
       {items.map(([label, value]) => (
         <span key={label} className="whitespace-nowrap">
-          <span className="text-neutral-500">{label} </span>
-          <span className="text-neutral-100 font-mono">{value}</span>
+          <span className="text-neutral-400">{label} </span>
+          <span className="text-neutral-700 font-mono">{value}</span>
         </span>
       ))}
     </footer>

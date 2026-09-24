@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import TopBar from "@/components/TopBar";
 import LeftSidebar from "@/components/LeftSidebar";
+import HomeEmpty from "@/components/HomeEmpty";
+import Composer from "@/components/Composer";
 import StepStream from "@/components/StepStream";
 import ArtifactPanel from "@/components/ArtifactPanel";
 import CostBar from "@/components/CostBar";
@@ -11,7 +12,6 @@ import { api, streamRun } from "@/lib/api";
 import { applyEvent, applySnapshot, initialState, type WorkbenchState } from "@/lib/store";
 import type { PlanStep, Skill, SseEvent, ThreadMeta } from "@/lib/types";
 import {
-  MOCK_GOAL,
   MOCK_THREAD_ID,
   mockCapabilities,
   mockEventsAfterApproval,
@@ -33,6 +33,12 @@ export default function Workbench() {
   const [approving, setApproving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
+
+  // 底部输入条状态（技能卡/chips 可预填）
+  const [composerGoal, setComposerGoal] = useState("");
+  const [composerSkill, setComposerSkill] = useState<Skill | null>(null);
+  const [focusSignal, setFocusSignal] = useState(0);
 
   // 代际计数：切换线程/重开运行时作废旧回放与旧流
   const genRef = useRef(0);
@@ -116,10 +122,6 @@ export default function Workbench() {
   useEffect(() => {
     if (mockMode) {
       setThreads(mockThreads);
-      const gen = resetWorkbench();
-      setActiveThreadId(MOCK_THREAD_ID);
-      setActiveGoal(MOCK_GOAL);
-      void replayMock(mockEventsBeforeApproval, gen);
       return;
     }
     api
@@ -135,14 +137,21 @@ export default function Workbench() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mockMode]);
 
-  // ---- 交互 ----
+  // ---- 左栏交互 ----
+  const handleNewResearch = useCallback(() => {
+    resetWorkbench();
+    setActiveThreadId(null);
+    setActiveGoal(null);
+    setFocusSignal((n) => n + 1);
+  }, [resetWorkbench]);
+
   const handleSelectThread = useCallback(
     (id: string) => {
       window.localStorage.setItem("yanbuddy:lastThread", id);
       if (mockMode) {
         const gen = resetWorkbench();
         setActiveThreadId(MOCK_THREAD_ID);
-        setActiveGoal(MOCK_GOAL);
+        setActiveGoal(mockThreads[0].goal);
         void replayMock(mockEventsBeforeApproval, gen);
         return;
       }
@@ -151,36 +160,50 @@ export default function Workbench() {
     [mockMode, resetWorkbench, restoreThread, replayMock]
   );
 
-  const handleCreateThread = useCallback(
-    async (goal: string, skill: Skill | null) => {
-      if (mockMode) {
-        // mock 模式只演示单条预置线程
-        const gen = resetWorkbench();
-        setActiveThreadId(MOCK_THREAD_ID);
-        setActiveGoal(goal || MOCK_GOAL);
-        void replayMock(mockEventsBeforeApproval, gen);
-        return;
-      }
-      setCreating(true);
-      setError(null);
-      try {
-        const { thread_id } = await api.createThread(goal, skill);
-        const r = await api.listThreads();
-        setThreads(r.threads);
-        window.localStorage.setItem("yanbuddy:lastThread", thread_id);
-        resetWorkbench();
-        setActiveThreadId(thread_id);
-        setActiveGoal(goal);
-        void startRun(thread_id);
-      } catch (e) {
-        setError(`创建线程失败：${String(e)}`);
-      } finally {
-        setCreating(false);
-      }
-    },
-    [mockMode, resetWorkbench, startRun]
-  );
+  const handlePickSkill = useCallback((skill: Skill) => {
+    setComposerSkill(skill);
+    setFocusSignal((n) => n + 1);
+  }, []);
 
+  const handlePickGoal = useCallback((goal: string) => {
+    setComposerGoal(goal);
+    setFocusSignal((n) => n + 1);
+  }, []);
+
+  // ---- 发送研究目标 ----
+  const handleSend = useCallback(async () => {
+    const goal = composerGoal.trim();
+    if (!goal || creating) return;
+    const skill = composerSkill;
+
+    if (mockMode) {
+      const gen = resetWorkbench();
+      setActiveThreadId(MOCK_THREAD_ID);
+      setActiveGoal(goal);
+      setComposerGoal("");
+      void replayMock(mockEventsBeforeApproval, gen);
+      return;
+    }
+    setCreating(true);
+    setError(null);
+    try {
+      const { thread_id } = await api.createThread(goal, skill);
+      const r = await api.listThreads();
+      setThreads(r.threads);
+      window.localStorage.setItem("yanbuddy:lastThread", thread_id);
+      resetWorkbench();
+      setActiveThreadId(thread_id);
+      setActiveGoal(goal);
+      setComposerGoal("");
+      void startRun(thread_id);
+    } catch (e) {
+      setError(`创建线程失败：${String(e)}`);
+    } finally {
+      setCreating(false);
+    }
+  }, [composerGoal, composerSkill, creating, mockMode, resetWorkbench, startRun]);
+
+  // ---- 审批 ----
   const handleApprove = useCallback(
     async (action: "approve" | "edit", plan?: PlanStep[]) => {
       if (!activeThreadId) return;
@@ -229,16 +252,17 @@ export default function Workbench() {
     return r.tools;
   }, [mockMode]);
 
+  const inThread = activeThreadId !== null;
+
   return (
-    <div className="h-full flex flex-col">
-      <TopBar />
+    <div className="h-full flex flex-col bg-white">
       {mockMode && (
-        <div className="bg-indigo-50 border-b border-indigo-200 text-indigo-700 text-xs px-4 py-1 shrink-0">
-          演示模式（?mock=1）：回放内置 fixture 事件流，不依赖后端。审批后将继续回放执行阶段。
+        <div className="bg-indigo-50 text-indigo-600 text-[11px] px-4 py-1 shrink-0 text-center">
+          演示模式（?mock=1）：回放内置 fixture 事件流，不依赖后端
         </div>
       )}
       {error && (
-        <div className="bg-red-50 border-b border-red-200 text-red-700 text-xs px-4 py-1.5 shrink-0">
+        <div className="bg-red-50 text-red-600 text-xs px-4 py-1.5 shrink-0">
           {error}
         </div>
       )}
@@ -247,27 +271,34 @@ export default function Workbench() {
           threads={threads}
           activeThreadId={activeThreadId}
           onSelectThread={handleSelectThread}
-          onCreateThread={handleCreateThread}
-          creating={creating}
+          onNewResearch={handleNewResearch}
+          onPickSkill={handlePickSkill}
           loadCapabilities={loadCapabilities}
         />
-        <main className="flex-1 flex flex-col min-w-0 bg-neutral-100">
-          {activeGoal && (
-            <div className="px-4 py-2 border-b border-neutral-200 bg-white text-sm shrink-0">
-              <span className="text-neutral-400 text-xs mr-2">研究目标</span>
-              {activeGoal}
-            </div>
+        <main className="flex-1 flex flex-col min-w-0 bg-white">
+          {inThread ? (
+            <StepStream
+              status={wb.status}
+              goal={activeGoal}
+              plan={wb.plan}
+              awaitingApproval={wb.awaitingApproval}
+              approving={approving}
+              onApprove={handleApprove}
+              timeline={wb.timeline}
+              streaming={streaming}
+              onResume={wb.status === "running" && !streaming ? handleResume : null}
+            />
+          ) : (
+            <HomeEmpty onPickSkill={handlePickSkill} onPickGoal={handlePickGoal} />
           )}
-          <StepStream
-            hasThread={activeThreadId !== null}
-            status={wb.status}
-            plan={wb.plan}
-            awaitingApproval={wb.awaitingApproval}
-            approving={approving}
-            onApprove={handleApprove}
-            timeline={wb.timeline}
-            streaming={streaming}
-            onResume={wb.status === "running" && !streaming ? handleResume : null}
+          <Composer
+            goal={composerGoal}
+            skill={composerSkill}
+            sending={creating}
+            focusSignal={focusSignal}
+            onChangeGoal={setComposerGoal}
+            onChangeSkill={setComposerSkill}
+            onSend={handleSend}
           />
         </main>
         <ArtifactPanel
@@ -275,6 +306,8 @@ export default function Workbench() {
           markdown={wb.artifactMarkdown}
           streaming={streaming}
           goal={activeGoal}
+          collapsed={panelCollapsed}
+          onToggle={() => setPanelCollapsed((v) => !v)}
         />
       </div>
       <CostBar cost={wb.cost} />

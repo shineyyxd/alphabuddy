@@ -3,12 +3,12 @@
 import { useState } from "react";
 import type { ToolCallItem } from "@/lib/store";
 
-const STATUS_STYLE: Record<string, { border: string; badge: string; label: string }> = {
-  running: { border: "border-blue-300", badge: "bg-blue-100 text-blue-700", label: "调用中" },
-  ok: { border: "border-neutral-200", badge: "bg-green-100 text-green-700", label: "ok" },
-  empty: { border: "border-neutral-300", badge: "bg-neutral-100 text-neutral-600", label: "empty（无数据）" },
-  degraded: { border: "border-neutral-400", badge: "bg-neutral-200 text-neutral-700", label: "degraded（降级）" },
-  error: { border: "border-red-400", badge: "bg-red-100 text-red-700", label: "error" },
+const STATUS_STYLE: Record<string, { badge: string; label: string }> = {
+  running: { badge: "bg-blue-50 text-blue-600", label: "调用中" },
+  ok: { badge: "bg-green-50 text-green-600", label: "ok" },
+  empty: { badge: "bg-neutral-100 text-neutral-500", label: "empty（无数据）" },
+  degraded: { badge: "bg-neutral-100 text-neutral-600", label: "degraded（降级）" },
+  error: { badge: "bg-red-50 text-red-600", label: "error" },
 };
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
@@ -27,25 +27,33 @@ export default function ToolCallCard({ item }: { item: ToolCallItem }) {
   const failed = item.status === "error" || item.status === "degraded";
 
   return (
-    <div className={`border rounded-lg bg-white ${st.border} ${failed ? "bg-neutral-50" : ""}`}>
+    <div
+      className={`rounded-2xl shadow-sm border ${
+        item.status === "error"
+          ? "border-red-200 bg-red-50/40"
+          : failed
+            ? "border-neutral-200 bg-neutral-50"
+            : "border-neutral-100 bg-white"
+      }`}
+    >
       <button
-        className="w-full flex items-center gap-2 px-3 py-2 text-left"
+        className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="text-neutral-400 text-xs">{open ? "▾" : "▸"}</span>
-        <span className="font-mono text-sm font-medium">{item.tool}</span>
-        <span className={`text-[10px] px-1.5 py-0.5 rounded ${st.badge}`}>{st.label}</span>
+        <span className="text-neutral-300 text-xs">{open ? "▾" : "▸"}</span>
+        <span className="font-mono text-[13px] font-medium text-neutral-700">{item.tool}</span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full ${st.badge}`}>{st.label}</span>
         {failed && (
-          <span className="text-xs text-neutral-500">无法验证 — 已生成降级卡片</span>
+          <span className="text-xs text-neutral-400">无法验证 — 已生成降级卡片</span>
         )}
-        <span className="ml-auto text-[10px] text-neutral-400">{item.callId}</span>
+        <span className="ml-auto text-[10px] text-neutral-300">{item.callId}</span>
       </button>
 
       {open && (
-        <div className="px-3 pb-3 border-t border-neutral-100 space-y-2">
-          <div className="mt-2">
+        <div className="px-4 pb-4 border-t border-neutral-100/80 space-y-2.5">
+          <div className="mt-2.5">
             <div className="text-[10px] text-neutral-400 mb-1">入参</div>
-            <pre className="bg-neutral-50 border border-neutral-200 rounded p-2 text-xs overflow-x-auto">
+            <pre className="bg-neutral-50 rounded-xl p-2.5 text-xs overflow-x-auto text-neutral-600">
               {JSON.stringify(item.params, null, 2)}
             </pre>
           </div>
@@ -53,7 +61,7 @@ export default function ToolCallCard({ item }: { item: ToolCallItem }) {
           {env && (
             <>
               {/* 证据四要素：来源 / 时点 / 单位 / 口径（固定展示） */}
-              <div className="grid grid-cols-2 gap-2 bg-neutral-50 border border-neutral-200 rounded p-2">
+              <div className="grid grid-cols-2 gap-2 bg-white border border-neutral-100 rounded-xl p-2.5">
                 <Field label="来源 source" value={env.source} />
                 <Field label="时点 as_of" value={env.as_of} />
                 <Field label="单位 unit" value={env.unit} />
@@ -62,10 +70,10 @@ export default function ToolCallCard({ item }: { item: ToolCallItem }) {
 
               {env.error && (
                 <div
-                  className={`text-xs rounded p-2 border ${
+                  className={`text-xs rounded-xl p-2.5 ${
                     item.status === "error"
-                      ? "bg-red-50 border-red-200 text-red-700"
-                      : "bg-neutral-100 border-neutral-300 text-neutral-600"
+                      ? "bg-red-50 text-red-600"
+                      : "bg-neutral-100 text-neutral-500"
                   }`}
                 >
                   失败原因 [{env.error.kind}]：{env.error.message}
@@ -76,7 +84,7 @@ export default function ToolCallCard({ item }: { item: ToolCallItem }) {
                 <div className="text-[10px] text-neutral-400 mb-1">
                   出参信封（data / auth / fetched_at）
                 </div>
-                <pre className="bg-neutral-50 border border-neutral-200 rounded p-2 text-xs overflow-x-auto max-h-64 overflow-y-auto">
+                <pre className="bg-neutral-50 rounded-xl p-2.5 text-xs overflow-x-auto max-h-64 overflow-y-auto text-neutral-600">
                   {JSON.stringify(
                     {
                       data: env.data,

@@ -6,15 +6,15 @@ import type { PlanStep } from "@/lib/types";
 function StepIcon({ status }: { status: PlanStep["status"] }) {
   switch (status) {
     case "done":
-      return <span className="text-green-600">●</span>;
+      return <span className="w-4 h-4 rounded-full bg-green-500 text-white text-[10px] flex items-center justify-center">✓</span>;
     case "failed":
-      return <span className="text-red-600">●</span>;
+      return <span className="w-4 h-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center">✕</span>;
     case "skipped":
-      return <span className="text-neutral-400">●</span>;
+      return <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-400 text-[10px] flex items-center justify-center">–</span>;
     case "running":
-      return <span className="text-blue-600 animate-pulse">●</span>;
+      return <span className="w-4 h-4 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />;
     default:
-      return <span className="text-neutral-300">○</span>;
+      return <span className="w-4 h-4 rounded-full border border-neutral-200 bg-white" />;
   }
 }
 
@@ -49,30 +49,30 @@ export default function PlanCard({ plan, awaitingApproval, approving, onApprove 
 
   return (
     <div
-      className={`border rounded-lg bg-white ${
-        awaitingApproval ? "border-amber-400 ring-1 ring-amber-200" : "border-neutral-200"
+      className={`rounded-2xl bg-white shadow-sm border ${
+        awaitingApproval ? "border-amber-200 ring-2 ring-amber-50" : "border-neutral-100"
       }`}
     >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-neutral-100">
-        <h3 className="text-sm font-semibold">
-          研究计划
+      <div className="flex items-center justify-between px-4 py-3">
+        <h3 className="text-sm font-semibold text-neutral-800">
+          主研的研究计划
           {awaitingApproval && (
             <span className="ml-2 text-xs text-amber-600 font-normal">
-              等待人工审批（interrupt）
+              等你确认（interrupt）
             </span>
           )}
         </h3>
-        <span className="text-xs text-neutral-400">{steps.length} 步</span>
+        <span className="text-xs text-neutral-300">{steps.length} 步</span>
       </div>
 
-      <ol className="px-3 py-2 space-y-1.5">
+      <ol className="px-4 pb-3 space-y-2">
         {steps.map((s, i) => (
-          <li key={s.id} className="flex items-center gap-2 text-sm">
+          <li key={s.id} className="flex items-center gap-2.5 text-sm">
             <StepIcon status={s.status} />
-            <span className="text-neutral-400 text-xs w-5">{i + 1}.</span>
+            <span className="text-neutral-300 text-xs w-4">{i + 1}.</span>
             {awaitingApproval ? (
               <input
-                className="flex-1 border border-neutral-200 rounded px-1.5 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
+                className="flex-1 border border-neutral-200 rounded-lg px-2 py-1 text-[13px] focus:outline-none focus:border-amber-300"
                 value={s.title}
                 onChange={(e) => updateTitle(s.id, e.target.value)}
               />
@@ -80,23 +80,23 @@ export default function PlanCard({ plan, awaitingApproval, approving, onApprove 
               <span
                 className={
                   s.status === "failed"
-                    ? "text-red-700"
+                    ? "text-red-600"
                     : s.status === "done"
-                      ? "text-neutral-700"
-                      : "text-neutral-600"
+                      ? "text-neutral-600"
+                      : "text-neutral-500"
                 }
               >
                 {s.title}
               </span>
             )}
             {s.tool && (
-              <span className="text-[10px] font-mono text-neutral-400 bg-neutral-50 border border-neutral-200 rounded px-1">
+              <span className="text-[10px] font-mono text-neutral-400 bg-neutral-50 rounded-full px-2 py-0.5">
                 {s.tool}
               </span>
             )}
             {awaitingApproval && (
               <button
-                className="text-xs text-red-500 hover:text-red-700 px-1"
+                className="text-xs text-neutral-300 hover:text-red-500 px-1 transition-colors"
                 title="删除此步骤"
                 onClick={() => removeStep(s.id)}
               >
@@ -108,23 +108,23 @@ export default function PlanCard({ plan, awaitingApproval, approving, onApprove 
       </ol>
 
       {awaitingApproval && (
-        <div className="flex items-center gap-2 px-3 py-2 border-t border-amber-100 bg-amber-50 rounded-b-lg">
+        <div className="flex items-center gap-2 px-4 py-3 border-t border-amber-100 bg-amber-50/60 rounded-b-2xl">
           <button
-            className="px-3 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+            className="px-4 py-1.5 text-[13px] bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50 transition-colors"
             disabled={approving}
             onClick={() => onApprove("approve")}
           >
             批准
           </button>
           <button
-            className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-1.5 text-[13px] bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 transition-colors"
             disabled={approving || !dirty || steps.length === 0}
             title={dirty ? "以编辑后的计划继续执行" : "先编辑（删步/改标题）再批准"}
             onClick={() => onApprove("edit", steps)}
           >
             编辑后批准
           </button>
-          {approving && <span className="text-xs text-neutral-500">提交中…</span>}
+          {approving && <span className="text-xs text-neutral-400">提交中…</span>}
           {dirty && <span className="text-xs text-amber-600">计划已修改（未提交）</span>}
         </div>
       )}
