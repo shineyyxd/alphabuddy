@@ -20,7 +20,7 @@ sleep 1
 
 cd "$ROOT/backend"
 [ -f .env ] || cp ../.env.example .env
-(uv run uvicorn app.main:app --port 8000 > "$LOG/backend.log" 2>&1 &)
+(uv run --env-file .env uvicorn app.main:app --port 8000 > "$LOG/backend.log" 2>&1 &)
 echo "后端启动中…"
 
 cd "$ROOT/frontend"
