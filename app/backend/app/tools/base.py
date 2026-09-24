@@ -225,6 +225,9 @@ def _guess_as_of(raw: dict[str, Any]) -> str | None:
                 return ms_to_date(pe)
         if data.get("period_end"):
             return str(data["period_end"])
+        anns = data.get("announcements")
+        if isinstance(anns, list) and anns and isinstance(anns[0], dict) and anns[0].get("date"):
+            return str(anns[0]["date"])
         if data.get("report"):
             return str(data["report"])
     return None

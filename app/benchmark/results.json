@@ -1,10 +1,10 @@
 {
-  "run_at": "2026-09-24T12:02:02+0800",
+  "run_at": "2026-09-24T12:17:23+0800",
   "base_url": "http://localhost:8000",
   "tolerance": 0.05,
   "total_cases": 20,
-  "overall_accuracy": 0.979,
-  "overall_pass_rate": 0.75,
+  "overall_accuracy": 1.0,
+  "overall_pass_rate": 1.0,
   "by_intent": [
     {
       "intent": "stock_data_query",
@@ -13,23 +13,23 @@
       "accuracy": 1.0,
       "pass_rate": 1.0,
       "tool_calls": 32,
-      "elapsed_s": 0.17
+      "elapsed_s": 0.15
     },
     {
       "intent": "thesis_validation",
       "intent_name": "命题验证",
       "cases": 4,
-      "accuracy": 0.917,
-      "pass_rate": 0.0,
+      "accuracy": 1.0,
+      "pass_rate": 1.0,
       "tool_calls": 16,
-      "elapsed_s": 0.06
+      "elapsed_s": 0.07
     },
     {
       "intent": "earnings_review",
       "intent_name": "财报点评",
       "cases": 1,
-      "accuracy": 0.917,
-      "pass_rate": 0.0,
+      "accuracy": 1.0,
+      "pass_rate": 1.0,
       "tool_calls": 4,
       "elapsed_s": 0.02
     },
@@ -49,7 +49,7 @@
       "accuracy": 1.0,
       "pass_rate": 1.0,
       "tool_calls": 11,
-      "elapsed_s": 0.05
+      "elapsed_s": 0.03
     }
   ],
   "cases": [
@@ -63,16 +63,16 @@
       "score": 1.0,
       "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.05,
+      "elapsed_s": 0.03,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 8,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "7ec5599d2a96"
+      "thread_id": "95c85c8e8bfa"
     },
     {
       "id": "num-02",
@@ -90,10 +90,10 @@
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 5,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "26205f513ff8"
+      "thread_id": "fee0bde5e2e0"
     },
     {
       "id": "num-03",
@@ -105,16 +105,16 @@
       "score": 1.0,
       "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.01,
+      "elapsed_s": 0.02,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 4,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "cb05ce7d6f01"
+      "thread_id": "a9426ec5695f"
     },
     {
       "id": "num-04",
@@ -132,10 +132,10 @@
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 5,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "819700053efa"
+      "thread_id": "b56b9b9c7287"
     },
     {
       "id": "num-05",
@@ -153,15 +153,36 @@
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 5,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "7016a1ccf556"
+      "thread_id": "371c737caf8b"
     },
     {
       "id": "num-06",
       "intent": "stock_data_query",
       "goal": "寒武纪 2026 中报研发费用率是多少",
+      "kind": "numeric",
+      "fabrication_ok": true,
+      "value_hit": true,
+      "score": 1.0,
+      "passed": true,
+      "tool_calls": 4,
+      "elapsed_s": 0.02,
+      "cost_final": {
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "llm_calls": 0,
+        "tool_calls": 4,
+        "elapsed_ms": 5,
+        "budget_remaining": 200000
+      },
+      "thread_id": "9d5aedb8c8bd"
+    },
+    {
+      "id": "num-07",
+      "intent": "stock_data_query",
+      "goal": "寒武纪 2026 中报主营业务收入占营业总收入的比例",
       "kind": "numeric",
       "fabrication_ok": true,
       "value_hit": true,
@@ -177,28 +198,7 @@
         "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "a8cc81b95df9"
-    },
-    {
-      "id": "num-07",
-      "intent": "stock_data_query",
-      "goal": "寒武纪 2026 中报主营业务收入占营业总收入的比例",
-      "kind": "numeric",
-      "fabrication_ok": true,
-      "value_hit": true,
-      "score": 1.0,
-      "passed": true,
-      "tool_calls": 4,
-      "elapsed_s": 0.02,
-      "cost_final": {
-        "tokens_in": 0,
-        "tokens_out": 0,
-        "llm_calls": 0,
-        "tool_calls": 4,
-        "elapsed_ms": 6,
-        "budget_remaining": 200000
-      },
-      "thread_id": "b6d88bb59296"
+      "thread_id": "45b30cfe2d10"
     },
     {
       "id": "num-08",
@@ -210,16 +210,16 @@
       "score": 1.0,
       "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.02,
+      "elapsed_s": 0.01,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 5,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "812c57e4058c"
+      "thread_id": "f13268a836cc"
     },
     {
       "id": "content-01",
@@ -229,21 +229,21 @@
       "fabrication_ok": true,
       "keyword_rate": 1.0,
       "keyword_missed": [],
-      "four_element_rate": 0.75,
+      "four_element_rate": 1.0,
       "evidence_field_rate": 1.0,
-      "score": 0.917,
-      "passed": false,
+      "score": 1.0,
+      "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.01,
+      "elapsed_s": 0.02,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 2,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "25fbbacf6d2c"
+      "thread_id": "a1139d53ba81"
     },
     {
       "id": "content-02",
@@ -253,10 +253,10 @@
       "fabrication_ok": true,
       "keyword_rate": 1.0,
       "keyword_missed": [],
-      "four_element_rate": 0.75,
+      "four_element_rate": 1.0,
       "evidence_field_rate": 1.0,
-      "score": 0.917,
-      "passed": false,
+      "score": 1.0,
+      "passed": true,
       "tool_calls": 4,
       "elapsed_s": 0.02,
       "cost_final": {
@@ -267,7 +267,7 @@
         "elapsed_ms": 5,
         "budget_remaining": 200000
       },
-      "thread_id": "3fa75a21f8d8"
+      "thread_id": "763a9abbe2b8"
     },
     {
       "id": "content-03",
@@ -277,58 +277,10 @@
       "fabrication_ok": true,
       "keyword_rate": 1.0,
       "keyword_missed": [],
-      "four_element_rate": 0.75,
+      "four_element_rate": 1.0,
       "evidence_field_rate": 1.0,
-      "score": 0.917,
-      "passed": false,
-      "tool_calls": 4,
-      "elapsed_s": 0.01,
-      "cost_final": {
-        "tokens_in": 0,
-        "tokens_out": 0,
-        "llm_calls": 0,
-        "tool_calls": 4,
-        "elapsed_ms": 2,
-        "budget_remaining": 200000
-      },
-      "thread_id": "2efe08ebba1a"
-    },
-    {
-      "id": "content-04",
-      "intent": "thesis_validation",
-      "goal": "验证寒武纪扣非净利润增速不低于归母净利润增速",
-      "kind": "content",
-      "fabrication_ok": true,
-      "keyword_rate": 1.0,
-      "keyword_missed": [],
-      "four_element_rate": 0.75,
-      "evidence_field_rate": 1.0,
-      "score": 0.917,
-      "passed": false,
-      "tool_calls": 4,
-      "elapsed_s": 0.02,
-      "cost_final": {
-        "tokens_in": 0,
-        "tokens_out": 0,
-        "llm_calls": 0,
-        "tool_calls": 4,
-        "elapsed_ms": 6,
-        "budget_remaining": 200000
-      },
-      "thread_id": "2c73d55999b1"
-    },
-    {
-      "id": "content-05",
-      "intent": "earnings_review",
-      "goal": "点评寒武纪 2026 中报业绩",
-      "kind": "content",
-      "fabrication_ok": true,
-      "keyword_rate": 1.0,
-      "keyword_missed": [],
-      "four_element_rate": 0.75,
-      "evidence_field_rate": 1.0,
-      "score": 0.917,
-      "passed": false,
+      "score": 1.0,
+      "passed": true,
       "tool_calls": 4,
       "elapsed_s": 0.02,
       "cost_final": {
@@ -339,7 +291,55 @@
         "elapsed_ms": 5,
         "budget_remaining": 200000
       },
-      "thread_id": "4811326cf5ab"
+      "thread_id": "5a1cf6c6c94c"
+    },
+    {
+      "id": "content-04",
+      "intent": "thesis_validation",
+      "goal": "验证寒武纪扣非净利润增速不低于归母净利润增速",
+      "kind": "content",
+      "fabrication_ok": true,
+      "keyword_rate": 1.0,
+      "keyword_missed": [],
+      "four_element_rate": 1.0,
+      "evidence_field_rate": 1.0,
+      "score": 1.0,
+      "passed": true,
+      "tool_calls": 4,
+      "elapsed_s": 0.01,
+      "cost_final": {
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "llm_calls": 0,
+        "tool_calls": 4,
+        "elapsed_ms": 3,
+        "budget_remaining": 200000
+      },
+      "thread_id": "f49ec6d34ef4"
+    },
+    {
+      "id": "content-05",
+      "intent": "earnings_review",
+      "goal": "点评寒武纪 2026 中报业绩",
+      "kind": "content",
+      "fabrication_ok": true,
+      "keyword_rate": 1.0,
+      "keyword_missed": [],
+      "four_element_rate": 1.0,
+      "evidence_field_rate": 1.0,
+      "score": 1.0,
+      "passed": true,
+      "tool_calls": 4,
+      "elapsed_s": 0.02,
+      "cost_final": {
+        "tokens_in": 0,
+        "tokens_out": 0,
+        "llm_calls": 0,
+        "tool_calls": 4,
+        "elapsed_ms": 5,
+        "budget_remaining": 200000
+      },
+      "thread_id": "0c934a005f70"
     },
     {
       "id": "guard-01",
@@ -355,7 +355,7 @@
       "tool_calls": 0,
       "elapsed_s": 0.0,
       "cost_final": null,
-      "thread_id": "1e4b3f5f934c"
+      "thread_id": "2726e98dd54b"
     },
     {
       "id": "guard-02",
@@ -371,7 +371,7 @@
       "tool_calls": 0,
       "elapsed_s": 0.0,
       "cost_final": null,
-      "thread_id": "ff13690c09a5"
+      "thread_id": "679661b78026"
     },
     {
       "id": "guard-03",
@@ -387,7 +387,7 @@
       "tool_calls": 0,
       "elapsed_s": 0.0,
       "cost_final": null,
-      "thread_id": "e066d8ea0063"
+      "thread_id": "906106942f43"
     },
     {
       "id": "guard-04",
@@ -403,7 +403,7 @@
       "tool_calls": 0,
       "elapsed_s": 0.0,
       "cost_final": null,
-      "thread_id": "3f553d91f624"
+      "thread_id": "cc72c5dcbd3a"
     },
     {
       "id": "deg-01",
@@ -419,16 +419,16 @@
       "score": 1.0,
       "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.02,
+      "elapsed_s": 0.01,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 5,
+        "elapsed_ms": 3,
         "budget_remaining": 200000
       },
-      "thread_id": "27902803299c"
+      "thread_id": "81fb4d7848e4"
     },
     {
       "id": "deg-02",
@@ -453,7 +453,7 @@
         "elapsed_ms": 2,
         "budget_remaining": 200000
       },
-      "thread_id": "32bf0250dee2"
+      "thread_id": "6770c5c9cad7"
     },
     {
       "id": "deg-03",
@@ -469,16 +469,16 @@
       "score": 1.0,
       "passed": true,
       "tool_calls": 4,
-      "elapsed_s": 0.02,
+      "elapsed_s": 0.01,
       "cost_final": {
         "tokens_in": 0,
         "tokens_out": 0,
         "llm_calls": 0,
         "tool_calls": 4,
-        "elapsed_ms": 2,
+        "elapsed_ms": 4,
         "budget_remaining": 200000
       },
-      "thread_id": "155229e620fc"
+      "thread_id": "2603c165684d"
     }
   ]
 }
