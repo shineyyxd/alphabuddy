@@ -4,6 +4,10 @@
 >
 > 题目 13「投资 X Buddy」参赛作品：面向投资研究者的透明 Agent 工作台。给一个研究目标，它出计划、调真实金融数据、全程可见可控，产出带证据与待核实事项的研究产物。仅做事实研究，不构成投资建议。
 
+**在线演示**：https://alphabuddy.site （免登录，每位访客自动获得独立空间）
+
+**交付物导航**：[演示视频](./demo/) · [AI 使用与验证记录](./AI_LOG.md) · [测试说明](./TESTING.md) · [评测集](./benchmark/) · [部署文档](./DEPLOY.md) · [API 契约](./docs/API_CONTRACT.md)
+
 ## 产品选择与竞品分析
 
 机构级方案（腾讯 WorkBuddy 金融版、Kimi 金融行业方案）把"数据 MCP 化 + 技能封装 + 多 Agent + 审批 + 可审计"卖给券商等机构；财搭子把多智能体包装成面向小白股民的托管产品。本产品验证：**同一套架构在个人研究者场景可以轻量落地，且把 Agent Harness 的内部状态（计划、工具调用、检查点、成本）全部透明化**——这是消费级产品（财搭子）藏起来、机构级产品（WorkBuddy）不面向个人的一层。
@@ -37,16 +41,17 @@
 **主动不做**：买卖建议/托管择时（题目红线，也是财搭子踩线边缘的能力）、N 个智能体人设包装（营销语言，非工程价值）。
 
 - **用户**：个人投资研究者（写研报/做决策前需要可验证的研究助手）
-- **非目标**：不做涨跌预测/收益承诺/买卖建议（合规红线）；不做实时推送；不做多用户组织治理；不做账户体系
+- **非目标**：不做涨跌预测/收益承诺/买卖建议（合规红线）；不做实时推送；不做组织治理与登录式账号体系（采用匿名访客隔离，免登录多空间）
 
 ## 架构
 
-见 [/Users/yuyue/xbuddy/ARCHITECTURE.md](../ARCHITECTURE.md)。要点：
+见 [ARCHITECTURE.md](../ARCHITECTURE.md)。要点：
 
-- **Agent 层**（LangGraph）：Supervisor → Planner → **interrupt 人工审批** → Researcher（工具循环）→ Reporter
+- **Agent 层**（LangGraph）：Supervisor（意图识别 + 公司名动态解析为标的代码）→ Planner → **interrupt 人工审批** → Researcher（工具循环）→ Reporter
 - **技能层**：3 张预置任务卡（命题验证 / 业绩点评 / 持仓早报）= prompt 模板 + 工具白名单 + 固定产物格式
-- **工具层**：扶摇（行情/估值/财务指标/报表）+ iFinD MCP（指标/报表/公告），统一返回 `{data, source, as_of, unit, caliber}`，每次调用写审计日志
-- **Harness 层**：SQLite Checkpointer（断点恢复）、Store（长期记忆）、recursion_limit + token 预算 + 单工具 10s 超时（停止规则）、上下文压缩
+- **工具层**：扶摇（行情/估值/财务指标/报表/标的检索）+ iFinD MCP（自然语言 query 风格财务/公告事件），统一返回 `{data, source, as_of, unit, caliber}`，每次调用写审计日志
+- **Harness 层**：SQLite Checkpointer（断点恢复）、Store（按访客隔离的长期记忆）、recursion_limit + token 预算 + 单工具超时（停止规则）、上下文压缩
+- **多租户**：匿名访客 ID（X-Visitor-Id）隔离线程与记忆，免登录、每人独立空间
 - **合规层**（参考 Kimi 金融方案风险评估网关）：输入拦截、授权检查落实到每次调用、产物数字可回指工具返回、强制"待核实事项"章节、审计全程可查
 - **可观测**：Langfuse（可选）/ 内置计数 → 前端成本条
 
@@ -71,23 +76,24 @@ app/scripts/demo.sh stop   # 全部停止
 
 ## AI 的角色
 
-- 开发与架构：Kimi Code（K2/K3）全程 AI Coding；候选人负责架构决断、契约设计、数据验证与错误修正（见 [AI_LOG.md](./AI_LOG.md)）
-- 产品内 LLM：Kimi API（OpenAI 兼容），承担意图识别、计划生成、报告措辞；**所有关键数字由程序从工具返回渲染，LLM 不可编造**
+- 开发与架构：Kimi Code（K2/K3）全程 AI Coding；候选人负责架构决断、契约设计、数据验证与错误修正（见 [AI_LOG.md](./AI_LOG.md)，8 条真实修正记录）
+- 产品内 LLM：DeepSeek（`deepseek-flash`，OpenAI 兼容接口），承担意图识别、计划生成、报告措辞；**所有关键数字与命题判定由程序从工具返回计算渲染，LLM 不可编造、不做算术加工**
 
 ## 数据来源
 
-- 扶摇（同花顺金融数据，https://fuyao.aicubes.cn）：行情快照、估值、财务指标、三大报表
-- iFinD MCP（https://mcp.51ifind.com）：财务指标、报表、公告
-- 所有证据卡固定四要素：来源、时点、单位、统计口径
+- 扶摇（同花顺金融数据，https://fuyao.aicubes.cn）：行情快照、估值、财务指标、三大报表、标的检索
+- iFinD MCP（https://mcp.51ifind.com）：财务数据与衍生指标、披露事件
+- 所有证据卡固定四要素：来源、时点、单位、统计口径；公司名输入经扶摇标的检索动态解析为证券代码
 
 ## 已知边界与未做事项
 
-- 记忆为单用户本地 Store，无多用户隔离
+- 访客空间绑定浏览器 localStorage，清空即丢（无登录设计的固有代价，UI 已提示）；iFinD 公告事件仅提供事件日期，无公告标题/PDF 列表
 - 持仓早报的定时触发为演示级（进程内调度），非生产级任务队列
 - 冲突检测为"同字段双源/双期不一致"规则，未做语义级矛盾识别
+- 追问以"新线程 + 记忆继承"实现，非同线程连续追问（检查点机制天然支持，属 24h 取舍）
 - 未做：实时推送、移动端、券商实盘对接（合规红线，主动不做）
 
 ## 测试与演示
 
-- 测试说明见 [TESTING.md](./TESTING.md)
-- 演示视频：（待录）
+- 测试说明见 [TESTING.md](./TESTING.md)（T1–T12 真实数据源执行记录）；评测集见 [benchmark/](./benchmark/)（真实数据源 20/20，Accuracy 1.000）
+- 演示视频见 [demo/](./demo/)
