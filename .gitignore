@@ -5,3 +5,7 @@ app/frontend/.next/
 **/.env
 deer-flow/
 .DS_Store
+
+# 演示视频文件不入库（体积大，单独交付）
+demo/*.mov
+demo/*.mp4
