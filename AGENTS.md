@@ -7,7 +7,7 @@
 
 ## 目录
 - `app/backend/`：FastAPI + LangGraph（Python 3.12，uv）。图：supervisor→planner(interrupt 审批)→researcher→reporter。工具层统一信封 `{data,source,as_of,unit,caliber}`。
-- `app/frontend/`：Next.js 14 App Router + Tailwind。三栏（线程/步骤流/产物）+ 成本条。`?mock=1` 回放模式。
+- `app/frontend/`：Next.js 14 App Router + Tailwind。财搭子风格对话式 UI：浅色边栏（线程/技能卡/能力）+ 中栏对话式步骤流（计划/工具/事件卡）+ 右栏可折叠产物面板 + 底部成本条。`?mock=1` 回放模式。
 - `app/backend/fixtures/`：寒武纪 688256.SH 2026 中报已验证数据，无 Key 时回放。
 
 ## 铁律
