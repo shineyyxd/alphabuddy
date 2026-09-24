@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getVisitorId, resetVisitorId } from "@/lib/api";
 import type { Skill, ThreadMeta, ThreadStatus, ToolInfo } from "@/lib/types";
 
 export const SKILL_CARDS: { value: Skill; label: string; desc: string }[] = [
@@ -61,6 +62,19 @@ export default function LeftSidebar({
   const [tools, setTools] = useState<ToolInfo[] | null>(null);
   const [capError, setCapError] = useState<string | null>(null);
   const [expandedTool, setExpandedTool] = useState<string | null>(null);
+  const [visitorId, setVisitorId] = useState<string | null>(null);
+
+  // 客户端挂载后再读 localStorage，避免 hydration 不一致
+  useEffect(() => {
+    setVisitorId(getVisitorId());
+  }, []);
+
+  const onResetVisitor = () => {
+    if (window.confirm("重置为新访客？旧空间的内容在新空间不可见（仍保留在原访客空间下）。")) {
+      resetVisitorId();
+      window.location.reload();
+    }
+  };
 
   useEffect(() => {
     if (!capOpen || tools !== null) return;
@@ -198,6 +212,20 @@ export default function LeftSidebar({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* 我的空间（匿名访客标识） */}
+      <div className="border-t border-neutral-100 px-3 py-2.5 flex items-center justify-between shrink-0">
+        <span className="text-[10px] text-neutral-400">
+          我的空间 · {visitorId ? visitorId.slice(0, 6) : "…"}
+        </span>
+        <button
+          className="text-[10px] text-neutral-400 hover:text-red-500 transition-colors"
+          onClick={onResetVisitor}
+          title="生成新的访客标识并刷新；旧空间内容在新空间不可见"
+        >
+          重置为新访客
+        </button>
       </div>
     </aside>
   );

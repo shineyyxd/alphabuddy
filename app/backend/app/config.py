@@ -34,6 +34,7 @@ class Settings:
     max_steps: int
     token_budget: int
     tool_timeout_seconds: float
+    ifind_tool_timeout_seconds: float
     langfuse_public_key: str
     langfuse_secret_key: str
     langfuse_host: str
@@ -65,6 +66,7 @@ def get_settings() -> Settings:
         max_steps=_int("MAX_STEPS", 30),
         token_budget=_int("TOKEN_BUDGET", 200000),
         tool_timeout_seconds=float(_int("TOOL_TIMEOUT_SECONDS", 10)),
+        ifind_tool_timeout_seconds=float(_int("IFIND_TOOL_TIMEOUT_SECONDS", 20)),
         langfuse_public_key=os.environ.get("LANGFUSE_PUBLIC_KEY", ""),
         langfuse_secret_key=os.environ.get("LANGFUSE_SECRET_KEY", ""),
         langfuse_host=os.environ.get("LANGFUSE_HOST", "https://cloud.langfuse.com"),

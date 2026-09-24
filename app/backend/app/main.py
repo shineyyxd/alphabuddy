@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
 import aiosqlite
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.errors import GraphRecursionError
@@ -91,6 +91,17 @@ async def _get_thread(thread_id: str) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
+def _visitor(request: Request) -> str:
+    """匿名访客标识：X-Visitor-Id 头，缺省 anon（直连 API 不报错）。"""
+    return request.headers.get("x-visitor-id") or "anon"
+
+
+def _check_owner(thread: dict[str, Any], visitor_id: str) -> None:
+    # visitor_id 为 NULL 的历史线程不归属任何人，需经 /api/threads/claim 认领
+    if thread.get("visitor_id") != visitor_id:
+        raise HTTPException(404, "thread 不存在")
+
+
 async def _set_status(thread_id: str, status: str) -> None:
     await _db_execute(
         "UPDATE threads SET status=?, updated_at=? WHERE thread_id=?",
@@ -121,15 +132,16 @@ async def _derive_status(thread_id: str, stored: str) -> str:
 
 
 @app.post("/api/threads", response_model=CreateThreadResponse)
-async def create_thread(req: CreateThreadRequest) -> CreateThreadResponse:
+async def create_thread(req: CreateThreadRequest, request: Request) -> CreateThreadResponse:
     st = _st()
+    visitor = _visitor(request)
     thread_id = uuid.uuid4().hex[:12]
     blocked, message = check_goal(req.goal)
     now = now_iso()
     await _db_execute(
-        "INSERT INTO threads(thread_id, goal, skill, status, created_at, updated_at)"
-        " VALUES (?,?,?,?,?,?)",
-        (thread_id, req.goal, req.skill, "failed" if blocked else "planning", now, now),
+        "INSERT INTO threads(thread_id, visitor_id, goal, skill, status, created_at, updated_at)"
+        " VALUES (?,?,?,?,?,?,?)",
+        (thread_id, visitor, req.goal, req.skill, "failed" if blocked else "planning", now, now),
     )
     bus = st.runtime.bus(thread_id)
     if blocked:
@@ -139,10 +151,13 @@ async def create_thread(req: CreateThreadRequest) -> CreateThreadResponse:
 
 
 @app.get("/api/threads")
-async def list_threads() -> dict[str, Any]:
+async def list_threads(request: Request) -> dict[str, Any]:
     async with aiosqlite.connect(_st().db_path) as db:
         db.row_factory = aiosqlite.Row
-        cur = await db.execute("SELECT * FROM threads ORDER BY created_at DESC")
+        cur = await db.execute(
+            "SELECT * FROM threads WHERE visitor_id=? ORDER BY created_at DESC",
+            (_visitor(request),),
+        )
         rows = await cur.fetchall()
     threads = []
     for r in rows:
@@ -152,24 +167,39 @@ async def list_threads() -> dict[str, Any]:
     return {"threads": threads}
 
 
+@app.post("/api/threads/claim")
+async def claim_threads(request: Request) -> dict[str, Any]:
+    """一次性认领：把 visitor_id IS NULL 的历史线程划归当前访客。"""
+    visitor = _visitor(request)
+    async with aiosqlite.connect(_st().db_path) as db:
+        cur = await db.execute(
+            "UPDATE threads SET visitor_id=? WHERE visitor_id IS NULL", (visitor,)
+        )
+        await db.commit()
+        return {"ok": True, "claimed": cur.rowcount}
+
+
 @app.get("/api/capabilities")
 async def capabilities() -> dict[str, Any]:
     return _st().runtime.registry.capabilities()
 
 
 @app.get("/api/threads/{thread_id}/audit")
-async def audit(thread_id: str) -> dict[str, Any]:
-    if not await _get_thread(thread_id):
+async def audit(thread_id: str, request: Request) -> dict[str, Any]:
+    thread = await _get_thread(thread_id)
+    if not thread:
         raise HTTPException(404, "thread 不存在")
+    _check_owner(thread, _visitor(request))
     logs = await _st().runtime.registry.audit.list_for_thread(thread_id)
     return {"thread_id": thread_id, "audit": logs}
 
 
 @app.get("/api/threads/{thread_id}/state")
-async def thread_state(thread_id: str) -> dict[str, Any]:
+async def thread_state(thread_id: str, request: Request) -> dict[str, Any]:
     thread = await _get_thread(thread_id)
     if not thread:
         raise HTTPException(404, "thread 不存在")
+    _check_owner(thread, _visitor(request))
     st = _st()
     snap = await st.graph.aget_state(_graph_config(thread_id))
     values: dict[str, Any] = snap.values if snap else {}
@@ -203,10 +233,11 @@ async def thread_state(thread_id: str) -> dict[str, Any]:
 
 
 @app.post("/api/threads/{thread_id}/approve")
-async def approve(thread_id: str, req: ApproveRequest) -> dict[str, Any]:
+async def approve(thread_id: str, req: ApproveRequest, request: Request) -> dict[str, Any]:
     thread = await _get_thread(thread_id)
     if not thread:
         raise HTTPException(404, "thread 不存在")
+    _check_owner(thread, _visitor(request))
     if req.action == "edit":
         if not req.plan:
             raise HTTPException(422, "action=edit 时必须携带编辑后的 plan")
@@ -234,7 +265,11 @@ async def _execute_graph(thread_id: str, thread: dict[str, Any]) -> None:
             await st.graph.ainvoke(Command(resume=decision), config)
         else:
             await st.graph.ainvoke(
-                {"goal": thread["goal"], "skill": thread["skill"], "thread_id": thread_id},
+                {
+                    "goal": thread["goal"], "skill": thread["skill"],
+                    "thread_id": thread_id,
+                    "visitor_id": thread.get("visitor_id") or "anon",
+                },
                 config,
             )
         snap = await st.graph.aget_state(config)
@@ -257,10 +292,11 @@ async def _execute_graph(thread_id: str, thread: dict[str, Any]) -> None:
 
 
 @app.post("/api/threads/{thread_id}/run")
-async def run_thread(thread_id: str, req: RunRequest) -> EventSourceResponse:
+async def run_thread(thread_id: str, req: RunRequest, request: Request) -> EventSourceResponse:
     thread = await _get_thread(thread_id)
     if not thread:
         raise HTTPException(404, "thread 不存在")
+    _check_owner(thread, _visitor(request))
     st = _st()
     rt = st.runtime
     bus = rt.bus(thread_id)

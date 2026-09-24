@@ -90,12 +90,13 @@ class AuditLogger:
         auth: str,
         status: str,
         error: str | None,
+        visitor_id: str = "",
     ) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(
-                "INSERT INTO tool_audit(thread_id, ts, tool, params, latency_ms, auth, status, error)"
-                " VALUES (?,?,?,?,?,?,?,?)",
-                (thread_id, now_iso(), tool, json.dumps(params, ensure_ascii=False),
+                "INSERT INTO tool_audit(thread_id, visitor_id, ts, tool, params, latency_ms, auth, status, error)"
+                " VALUES (?,?,?,?,?,?,?,?,?)",
+                (thread_id, visitor_id, now_iso(), tool, json.dumps(params, ensure_ascii=False),
                  latency_ms, auth, status, error),
             )
             await db.commit()
@@ -132,8 +133,12 @@ class BaseAPIClient:
     def has_key(self) -> bool:  # pragma: no cover - overridden
         return False
 
+    @property
+    def timeout_seconds(self) -> float:
+        return self.settings.tool_timeout_seconds
+
     async def _request(self, method: str, url: str, **kwargs: Any) -> dict[str, Any]:
-        timeout = self.settings.tool_timeout_seconds
+        timeout = self.timeout_seconds
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.request(method, url, **kwargs)
             resp.raise_for_status()
@@ -167,12 +172,12 @@ class BaseAPIClient:
                 auth="missing_key", as_of=as_of_hint, unit=unit or None, caliber=caliber or None,
             )
         try:
-            raw = await asyncio.wait_for(fetcher(), timeout=self.settings.tool_timeout_seconds)
+            raw = await asyncio.wait_for(fetcher(), timeout=self.timeout_seconds)
             data = normalize(raw)
         except asyncio.TimeoutError:
             return await self._degrade(
                 tool, fixture_key, normalize, "timeout",
-                f"调用超时（>{self.settings.tool_timeout_seconds:.0f}s）", as_of_hint, unit, caliber,
+                f"调用超时（>{self.timeout_seconds:.0f}s）", as_of_hint, unit, caliber,
             )
         except Exception as exc:  # 网络错误 / HTTP 错误 / 业务错误 / 解析校验失败统一走降级判定
             return await self._degrade(

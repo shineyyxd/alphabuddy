@@ -20,13 +20,16 @@ from .skills import ALIASES, DEFAULT_REPORT, SKILLS, match_skill
 from .tools.registry import ToolRegistry
 
 THSCODE_RE = re.compile(r"\d{6}\.(?:SH|SZ|BJ)", re.IGNORECASE)
-MEMORY_NAMESPACE = ("user_memories",)
+def memory_ns(visitor_id: str | None) -> tuple[str, str]:
+    # 长期记忆按访客隔离；缺省 anon
+    return ("user_memories", visitor_id or "anon")
 
 
 class ResearchState(TypedDict, total=False):
     goal: str
     skill: str
     thread_id: str
+    visitor_id: str
     thscode: str | None
     resolve_note: str | None
     plan: list[dict[str, Any]]
@@ -133,7 +136,7 @@ async def supervisor(state: ResearchState) -> dict[str, Any]:
 
     memory_hits: list[str] = []
     try:
-        items = await rt.store.asearch(MEMORY_NAMESPACE, limit=5)
+        items = await rt.store.asearch(memory_ns(state.get("visitor_id")), limit=5)
         for it in items:
             val = it.value or {}
             if thscode and thscode in json.dumps(val, ensure_ascii=False):
@@ -228,7 +231,9 @@ async def researcher(state: ResearchState) -> dict[str, Any]:
 
     call_id = f"{step['id']}-c1"
     bus.emit("tool_call_start", {"step_id": step["id"], "call_id": call_id, "tool": tool, "params": params})
-    envelope, _latency = await rt.registry.call(tool, params, thread_id=thread_id, cost=cost)
+    envelope, _latency = await rt.registry.call(
+        tool, params, thread_id=thread_id, cost=cost, visitor_id=state.get("visitor_id") or "anon"
+    )
     env = envelope.model_dump()
 
     if envelope.error is not None:
@@ -362,7 +367,7 @@ async def reporter(state: ResearchState) -> dict[str, Any]:
     summary = _memory_summary(plan, goal, thscode)
     key = f"{thscode}_{skill}"
     try:
-        await rt.store.aput(MEMORY_NAMESPACE, key, {
+        await rt.store.aput(memory_ns(state.get("visitor_id")), key, {
             "summary": summary, "thread_id": thread_id, "goal": goal, "thscode": thscode,
         })
         bus.emit("memory_write", {"key": key, "summary": summary})

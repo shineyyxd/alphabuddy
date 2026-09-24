@@ -119,6 +119,7 @@ class ToolRegistry:
         *,
         thread_id: str = "",
         cost: CostTracker | None = None,
+        visitor_id: str = "",
     ) -> tuple[ToolEnvelope, int]:
         spec = self._by_name.get(name)
         if spec is None:
@@ -147,6 +148,7 @@ class ToolRegistry:
             auth=envelope.auth,
             status=status,
             error=envelope.error.message if envelope.error else None,
+            visitor_id=visitor_id,
         )
         if cost is not None:
             cost.record_tool()

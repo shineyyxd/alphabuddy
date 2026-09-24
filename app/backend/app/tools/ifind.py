@@ -300,6 +300,11 @@ class IFinDMCPClient(BaseAPIClient):
     def has_key(self) -> bool:
         return bool(self.settings.ifind_auth_token)
 
+    @property
+    def timeout_seconds(self) -> float:
+        # iFinD 自然语言查询实测 6–9s，10s 上限过紧，单独放宽
+        return self.settings.ifind_tool_timeout_seconds
+
     async def _rpc(self, method: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         import httpx
 
@@ -311,7 +316,7 @@ class IFinDMCPClient(BaseAPIClient):
         if self._session_id:
             headers["Mcp-Session-Id"] = self._session_id
         payload = {"jsonrpc": "2.0", "id": 1, "method": method, "params": params or {}}
-        timeout = self.settings.tool_timeout_seconds
+        timeout = self.timeout_seconds
         async with httpx.AsyncClient(timeout=timeout) as client:
             resp = await client.post(self.settings.ifind_mcp_url, json=payload, headers=headers)
             resp.raise_for_status()

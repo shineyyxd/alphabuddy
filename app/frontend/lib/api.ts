@@ -1,8 +1,31 @@
 // REST + POST SSE 客户端，严格按 API_CONTRACT.md
 import type { PlanStep, Skill, SseEvent, ThreadMeta, ThreadState, ToolInfo } from "./types";
 
+// ---- 匿名访客标识：首次访问生成 UUID 存 localStorage，所有 API 调用带 X-Visitor-Id ----
+const VISITOR_KEY = "ab_visitor_id";
+
+export function getVisitorId(): string {
+  if (typeof window === "undefined") return "anon";
+  let id = window.localStorage.getItem(VISITOR_KEY);
+  if (!id) {
+    id = window.crypto.randomUUID();
+    window.localStorage.setItem(VISITOR_KEY, id);
+  }
+  return id;
+}
+
+export function resetVisitorId(): string {
+  const id = window.crypto.randomUUID();
+  window.localStorage.setItem(VISITOR_KEY, id);
+  return id;
+}
+
+function withVisitor(headers?: HeadersInit): HeadersInit {
+  return { "X-Visitor-Id": getVisitorId(), ...(headers ?? {}) };
+}
+
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
+  const res = await fetch(url, { ...init, headers: withVisitor(init?.headers) });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     throw new Error(`${init?.method ?? "GET"} ${url} → ${res.status} ${text}`);
@@ -42,7 +65,7 @@ export async function streamRun(
 ): Promise<void> {
   const res = await fetch(`/api/threads/${threadId}/run`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: withVisitor({ "Content-Type": "application/json" }),
     body: JSON.stringify({ resume_token: resumeToken }),
     signal,
   });
