@@ -15,22 +15,6 @@ from app.tools.registry import ToolRegistry
 GOAL = "验证寒武纪盈利改善来自主营业务"
 
 
-@pytest.fixture()
-async def graph_env(tmp_db):
-    settings = get_settings()
-    await init_db(tmp_db)
-    registry = ToolRegistry(settings, AuditLogger(tmp_db))
-    llm = LLMClient(settings.llm_base_url, "", settings.llm_model)
-    store = InMemoryStore()
-    rt = Runtime(
-        settings=settings, registry=registry, llm=llm, store=store,
-        buses={}, costs={}, pending_approvals={},
-    )
-    set_runtime(rt)
-    async with AsyncSqliteSaver.from_conn_string(tmp_db) as cp:
-        yield build_graph(cp, store), rt
-
-
 def _cfg(thread_id: str, recursion_limit: int = 100) -> dict:
     return {"configurable": {"thread_id": thread_id}, "recursion_limit": recursion_limit}
 

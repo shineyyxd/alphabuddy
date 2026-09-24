@@ -26,3 +26,18 @@ def test_allows_research_goal():
 def test_allows_earnings_review():
     blocked, _ = check_goal("点评寒武纪 2026 中报业绩")
     assert not blocked
+
+
+def test_blocks_nengmaima_variants():
+    for goal in ("宇树科技能买吗", "寒武纪可以买吗", "寒武纪能买么", "宇树科技能入手吗", "寒武纪能入吗"):
+        blocked, msg = check_goal(goal)
+        assert blocked, goal
+        assert "买卖建议" in msg
+
+
+def test_research_phrasing_not_blocked():
+    # 研究型表述含"能"含"盈利"不得误伤
+    blocked, _ = check_goal("验证宇树科技的盈利能力")
+    assert not blocked
+    blocked, _ = check_goal("分析寒武纪能不能持续盈利")
+    assert not blocked

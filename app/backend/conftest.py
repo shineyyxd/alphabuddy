@@ -17,3 +17,29 @@ def tmp_db(tmp_path, monkeypatch):
     path = tmp_path / "test.db"
     monkeypatch.setenv("SQLITE_PATH", str(path))
     return str(path)
+
+
+@pytest.fixture()
+async def graph_env(tmp_db):
+    from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+    from langgraph.store.memory import InMemoryStore
+
+    from app.config import get_settings
+    from app.db import init_db
+    from app.graph import Runtime, build_graph, set_runtime
+    from app.llm import LLMClient
+    from app.tools.base import AuditLogger
+    from app.tools.registry import ToolRegistry
+
+    settings = get_settings()
+    await init_db(tmp_db)
+    registry = ToolRegistry(settings, AuditLogger(tmp_db))
+    llm = LLMClient(settings.llm_base_url, "", settings.llm_model)
+    store = InMemoryStore()
+    rt = Runtime(
+        settings=settings, registry=registry, llm=llm, store=store,
+        buses={}, costs={}, pending_approvals={},
+    )
+    set_runtime(rt)
+    async with AsyncSqliteSaver.from_conn_string(tmp_db) as cp:
+        yield build_graph(cp, store), rt

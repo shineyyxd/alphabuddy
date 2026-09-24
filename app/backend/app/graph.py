@@ -15,6 +15,7 @@ from .config import Settings
 from .cost import CostTracker
 from .events import EventBus
 from .llm import LLMClient, LLMUnavailableError
+from .resolve import extract_subject, resolve_thscode_via_fuyao
 from .skills import ALIASES, DEFAULT_REPORT, SKILLS, match_skill
 from .tools.registry import ToolRegistry
 
@@ -26,6 +27,8 @@ class ResearchState(TypedDict, total=False):
     goal: str
     skill: str
     thread_id: str
+    thscode: str | None
+    resolve_note: str | None
     plan: list[dict[str, Any]]
     step_idx: int
     context_blob: str
@@ -106,10 +109,31 @@ async def supervisor(state: ResearchState) -> dict[str, Any]:
     goal = state["goal"]
     bus = rt.bus(thread_id)
 
+    # 标的解析：静态别名/正则未命中时走扶摇检索接口（失败不阻塞，显式降级）
+    thscode = extract_thscode(goal)
+    resolve_note: str | None = None
+    if not thscode:
+        try:
+            hit = await resolve_thscode_via_fuyao(goal, rt.settings)
+        except Exception:
+            hit = None
+        if hit:
+            thscode = hit["thscode"]
+            bus.emit("warning", {
+                "kind": "resolved",
+                "message": f"已将「{extract_subject(goal) or goal}」解析为上市标的 {hit['name']}（{hit['thscode']}）",
+                "thscode": hit["thscode"],
+                "name": hit["name"],
+            })
+        else:
+            resolve_note = (
+                f"未能将「{extract_subject(goal) or goal}」解析为上市标的"
+                "（可能未上市或名称不匹配），建议改用股票代码输入"
+            )
+
     memory_hits: list[str] = []
     try:
         items = await rt.store.asearch(MEMORY_NAMESPACE, limit=5)
-        thscode = extract_thscode(goal)
         for it in items:
             val = it.value or {}
             if thscode and thscode in json.dumps(val, ensure_ascii=False):
@@ -120,7 +144,7 @@ async def supervisor(state: ResearchState) -> dict[str, Any]:
         pass
 
     skill = state.get("skill") or match_skill(goal)
-    return {"skill": skill, "memory_hits": memory_hits}
+    return {"skill": skill, "memory_hits": memory_hits, "thscode": thscode, "resolve_note": resolve_note}
 
 
 def _default_params(tool: str, thscode: str | None) -> dict[str, Any]:
@@ -139,7 +163,7 @@ async def planner(state: ResearchState) -> dict[str, Any]:
     thread_id = state["thread_id"]
     bus = rt.bus(thread_id)
     card = SKILLS[state["skill"]]
-    thscode = extract_thscode(state["goal"])
+    thscode = state.get("thscode") or extract_thscode(state["goal"])
 
     steps = [
         {
@@ -334,7 +358,7 @@ async def reporter(state: ResearchState) -> dict[str, Any]:
     title = f"{SKILLS[skill].display_name}报告：{goal[:40]}"
     bus.emit("artifact_done", {"artifact_id": "a1", "kind": "report", "title": title, "markdown": markdown})
 
-    thscode = extract_thscode(goal) or "unknown"
+    thscode = state.get("thscode") or extract_thscode(goal) or "unknown"
     summary = _memory_summary(plan, goal, thscode)
     key = f"{thscode}_{skill}"
     try:
@@ -442,7 +466,7 @@ def _render_report(rt: Runtime, state: ResearchState, plan: list[dict[str, Any]]
     lines.append("")
     lines.append("## 待核实事项")
     lines.append("")
-    for item in _verify_items(plan, rows, used_fixture, missing):
+    for item in _verify_items(plan, rows, used_fixture, missing, state.get("resolve_note")):
         lines.append(f"- {item}")
     lines.append("")
     lines.append("## 失效条件")
@@ -519,8 +543,10 @@ def _render_conclusion(rt: Runtime, state: ResearchState, plan: list[dict[str, A
     return "各步骤取数结果见证据清单；LLM 未配置，未生成解读文字。"
 
 
-def _verify_items(plan: list[dict[str, Any]], rows: list[dict[str, Any]], used_fixture: bool, missing: list[dict[str, Any]]) -> list[str]:
+def _verify_items(plan: list[dict[str, Any]], rows: list[dict[str, Any]], used_fixture: bool, missing: list[dict[str, Any]], resolve_note: str | None = None) -> list[str]:
     items: list[str] = []
+    if resolve_note:
+        items.append(resolve_note)
     if used_fixture:
         items.append("本次数据为 fixture 回放样例（未配置真实数据源 Key），结论需以真实数据源复核")
     deduct = _metric(plan, "deducted_net_profit_yoy")
