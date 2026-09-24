@@ -90,18 +90,7 @@ class ToolRegistry:
                 },
                 "fn": ifind.announcement,
             },
-            {
-                "name": "ifind_news",
-                "display_name": "新闻（iFinD，可选）",
-                "description": "个股相关新闻列表",
-                "source": "ifind",
-                "params_schema": {
-                    "type": "object",
-                    "properties": {"thscode": {"type": "string"}, "limit": {"type": "integer", "default": 5}},
-                    "required": ["thscode"],
-                },
-                "fn": ifind.news,
-            },
+            # ifind_news 已移除：iFinD MCP 实测无新闻类工具（2026-09-24 tools/list）
         ]
         self._by_name = {s["name"]: s for s in self._specs}
 

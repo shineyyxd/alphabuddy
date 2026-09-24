@@ -311,6 +311,12 @@ def _fmt_yi(value: float | int | None) -> str:
     return f"{value / 1e8:.2f}亿"
 
 
+def _fmt_yoy(value: float | int | None) -> str:
+    if value is None:
+        return "未披露"
+    return f"{'+' if value >= 0 else ''}{value}"
+
+
 async def reporter(state: ResearchState) -> dict[str, Any]:
     rt = get_runtime()
     thread_id = state["thread_id"]
@@ -347,9 +353,9 @@ def _memory_summary(plan: list[dict[str, Any]], goal: str, thscode: str) -> str:
     rd = _metric(plan, "rd_expense_ratio")
     parts = [f"研究目标：{goal}"]
     if oi:
-        parts.append(f"营业总收入{_fmt_yi(oi.get('value'))}元（同比+{oi.get('yoy_pct')}%）")
+        parts.append(f"营业总收入{_fmt_yi(oi.get('value'))}元（同比{_fmt_yoy(oi.get('yoy_pct'))}%）")
     if np_:
-        parts.append(f"归母净利{_fmt_yi(np_.get('value'))}元（同比+{np_.get('yoy_pct')}%）")
+        parts.append(f"归母净利{_fmt_yi(np_.get('value'))}元（同比{_fmt_yoy(np_.get('yoy_pct'))}%）")
     if rd:
         parts.append(f"研发费用率{rd.get('value')}%（上年{rd.get('prior')}%）")
     return "；".join(parts)
@@ -449,18 +455,40 @@ def _render_report(rt: Runtime, state: ResearchState, plan: list[dict[str, Any]]
     return "\n".join(lines)
 
 
+def _thesis_verdict(plan: list[dict[str, Any]]) -> str:
+    """命题验证的判定由程序基于证据数字计算（判定即数字的函数，不给 LLM 自由发挥）。"""
+    np_ = _metric(plan, "parent_holder_net_profit")
+    deduct = _metric(plan, "deducted_net_profit_yoy")
+    main_ratio = _metric(plan, "main_business_income_ratio")
+    if not any([np_, deduct, main_ratio]):
+        return "**判定：证据不足，无法验证命题**（关键指标未取到，见待核实事项）"
+    supported = (
+        main_ratio is not None and (main_ratio.get("value") or 0) >= 99
+        and deduct is not None and np_ is not None
+        and (deduct.get("value") or 0) >= (np_.get("yoy_pct") or 0)
+    )
+    if supported:
+        return ("**判定：命题获得本期财报数据支持**"
+                "（主营业务收入占比 ≥99%，且扣非归母净利同比 ≥ 归母净利同比）")
+    return ("**判定：本期数据不足以支持该命题**"
+            "（主营占比或扣非/归母增速关系不满足支持条件）")
+
+
 def _render_conclusion(rt: Runtime, state: ResearchState, plan: list[dict[str, Any]], rows: list[dict[str, Any]]) -> str:
     thread_id = state["thread_id"]
     evidence_json = json.dumps(rows, ensure_ascii=False)
+    verdict = _thesis_verdict(plan) if state["skill"] == "thesis_check" else None
     prose = _llm_invoke_with_retry(
         rt,
         "你是投资研究助理。根据给定证据 JSON 撰写研究结论解读（200 字内）。"
-        "禁止出现证据中不存在的数字；只做事实归纳，不做买卖建议、不做涨跌预测。",
+        "禁止出现证据中不存在的数字；禁止对证据数字做任何算术加工（合计、差值、倍数、取整变形），"
+        "每个数字必须原样引用证据值；只做事实归纳，不做买卖建议、不做涨跌预测；"
+        "不要输出判定句（判定由系统给出），只写证据解读。",
         f"研究目标：{state['goal']}\n证据：{evidence_json}",
         thread_id,
     )
     if prose:
-        return prose.strip()
+        return f"{verdict}\n\n{prose.strip()}" if verdict else prose.strip()
     # 无 LLM：模板化结论，数字全部从证据渲染
     if state["skill"] == "thesis_check":
         oi = _metric(plan, "operating_income")
@@ -476,11 +504,11 @@ def _render_conclusion(rt: Runtime, state: ResearchState, plan: list[dict[str, A
         )
         parts = ["本期财报数据显示："]
         if oi:
-            parts.append(f"营业总收入 {_fmt_yi(oi.get('value'))}元，同比 +{oi.get('yoy_pct')}%；")
+            parts.append(f"营业总收入 {_fmt_yi(oi.get('value'))}元，同比 {_fmt_yoy(oi.get('yoy_pct'))}%；")
         if np_:
-            parts.append(f"归母净利润 {_fmt_yi(np_.get('value'))}元，同比 +{np_.get('yoy_pct')}%；")
+            parts.append(f"归母净利润 {_fmt_yi(np_.get('value'))}元，同比 {_fmt_yoy(np_.get('yoy_pct'))}%；")
         if deduct:
-            parts.append(f"扣非归母净利润同比 +{deduct.get('value')}%；")
+            parts.append(f"扣非归母净利润同比 {_fmt_yoy(deduct.get('value'))}%；")
         if main_ratio:
             parts.append(f"主营业务收入占营业总收入比例 {main_ratio.get('value')}%。")
         if supported:

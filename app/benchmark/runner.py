@@ -146,6 +146,11 @@ def evidence_field_rate(envs: list[dict[str, Any]], fields: list[str]) -> float:
     return hits / len(fields)
 
 
+def _kw_hit(kw: str, text: str) -> bool:
+    # "支持|成立|一致" 表示任一命中即可（真实 LLM 措辞不固定，判定词取同义候选）
+    return any(alt in text for alt in kw.split("|"))
+
+
 def score_case(case: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
     exp = case["expect"]
     kind = exp["kind"]
@@ -170,13 +175,13 @@ def score_case(case: dict[str, Any], run: dict[str, Any]) -> dict[str, Any]:
     elif kind == "content":
         scope = conclusion_section(md) if exp.get("keyword_scope") == "conclusion" else md
         kws = exp.get("keywords") or []
-        kw_hits = [k for k in kws if k in scope]
+        kw_hits = [k for k in kws if _kw_hit(k, scope)]
         kw_rate = len(kw_hits) / len(kws) if kws else 1.0
         fe_rate = four_element_rate(envs)
         ef_rate = evidence_field_rate(envs, exp.get("evidence_fields") or [])
         detail.update({
             "keyword_rate": round(kw_rate, 3),
-            "keyword_missed": [k for k in kws if k not in scope],
+            "keyword_missed": [k for k in kws if not _kw_hit(k, scope)],
             "four_element_rate": round(fe_rate, 3),
             "evidence_field_rate": round(ef_rate, 3),
         })

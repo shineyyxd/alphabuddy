@@ -56,7 +56,8 @@ run_started → step_start → tool_call_start → tool_call_result → step_don
 
 - **LangGraph 硬能力**：`AsyncSqliteSaver` 检查点（服务重启后审批/断点续跑已验证）、`interrupt()` 计划审批、`InMemoryStore` 长期记忆（namespace `user_memories`，跨线程命中"上次研究的…"）、`recursion_limit` + token 预算 + 单工具 10s 超时停止规则（触发发 `stopped` 事件）。
 - **工具信封铁律**：每个工具返回 `{data, source, as_of, unit, caliber, fetched_at, auth, error}`；每次调用写 `tool_audit` 表。报告中的关键数字由后端从信封渲染（`_evidence_rows`），LLM 只写解释文字，不可编造数字。
-- **三态数据源**：无 Key + `ALLOW_FIXTURE_FALLBACK=true` → 回放 `fixtures/`（寒武纪 2026 中报已验证数据）；无 Key + false → `error.kind=missing_key` 显式降级，步骤标 failed 不阻塞后续；有 Key → 真调（扶摇 `X-api-key` 头，iFinD streamable-http JSON-RPC + Bearer）。
+- **三态数据源**：无 Key + `ALLOW_FIXTURE_FALLBACK=true` → 回放 `fixtures/`（寒武纪 2026 中报已验证数据）；无 Key + false → `error.kind=missing_key` 显式降级，步骤标 failed 不阻塞后续；有 Key → 真调（扶摇 `X-api-key` 头；iFinD streamable-http JSON-RPC + Bearer，2026-09-24 实测 tools/list 全部为自然语言 query 风格工具：`ifind_fin_indicator`/`ifind_fin_statement` → `get_stock_financials`，`ifind_announcement` → `get_stock_events`，返回 markdown 表格由后端解析为指标字段，解析失败则原文入 data 不崩；**证券代码校验**：iFinD 会把不存在的代码模糊匹配到相近真实标的，normalize 校验返回代码与请求一致，不一致按标的不存在转错误信封）。`ifind_news` 已移除（真实无对应工具）。
+- **LLM（推理模型适配）**：结论解读由 LLM 撰写；**命题判定句与关键数字由程序基于证据渲染**（判定即数字的函数），prompt 禁止 LLM 出现证据外数字及任何算术加工；content 为空（reasoning 吃光 max_tokens）时自动放大重试；成本读 usage。
 - **合规**：输入守卫拦截涨跌预测/买卖建议（`warning{kind:"guard"}`，不进图）；报告强制含待核实事项与失效条件；页脚 disclaimer。
 - **上下文压缩**：`context_blob` 超 `COMPRESS_THRESHOLD_CHARS`（默认 24000）时摘要压缩并发 `compress` 事件。
 

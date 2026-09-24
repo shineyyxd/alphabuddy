@@ -168,17 +168,18 @@ class BaseAPIClient:
             )
         try:
             raw = await asyncio.wait_for(fetcher(), timeout=self.settings.tool_timeout_seconds)
+            data = normalize(raw)
         except asyncio.TimeoutError:
             return await self._degrade(
                 tool, fixture_key, normalize, "timeout",
                 f"调用超时（>{self.settings.tool_timeout_seconds:.0f}s）", as_of_hint, unit, caliber,
             )
-        except Exception as exc:  # 网络错误 / HTTP 错误 / 业务错误统一走降级判定
+        except Exception as exc:  # 网络错误 / HTTP 错误 / 业务错误 / 解析校验失败统一走降级判定
             return await self._degrade(
                 tool, fixture_key, normalize, "api_error", str(exc), as_of_hint, unit, caliber,
             )
         return ok_envelope(
-            data=normalize(raw), source=self.source,
+            data=data, source=self.source,
             as_of=_guess_as_of(raw) or as_of_hint, unit=unit, caliber=caliber, auth="ok",
         )
 

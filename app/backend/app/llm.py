@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -20,12 +21,17 @@ class LLMResponse:
 
 @dataclass
 class LLMClient:
-    """OpenAI 兼容客户端封装；LLM_API_KEY 缺失时首次调用即抛 LLMUnavailableError。"""
+    """OpenAI 兼容客户端封装；LLM_API_KEY 缺失时首次调用即抛 LLMUnavailableError。
+
+    兼容推理模型（如 deepseek-flash）：reasoning_content 由 langchain-openai 放入
+    additional_kwargs，不当正文；content 为空（token 被推理吃光）时放大 max_tokens 重试。
+    """
 
     base_url: str
     api_key: str
     model: str
     temperature: float = 0.2
+    max_tokens: int = field(default_factory=lambda: int(os.environ.get("LLM_MAX_TOKENS", "4096")))
     _chat: ChatOpenAI | None = field(default=None, init=False, repr=False)
 
     @property
@@ -41,7 +47,8 @@ class LLMClient:
                 api_key=self.api_key,
                 model=self.model,
                 temperature=self.temperature,
-                timeout=30,
+                max_tokens=self.max_tokens,
+                timeout=60,
                 max_retries=1,
             )
         return self._chat
@@ -50,6 +57,9 @@ class LLMClient:
         chat = self._get_chat()
         messages: list[BaseMessage] = [SystemMessage(content=system), HumanMessage(content=user)]
         resp = chat.invoke(messages)
+        if not str(resp.content).strip():
+            # 推理模型可能把 max_tokens 全部消耗在 reasoning 上导致正文为空
+            resp = chat.bind(max_tokens=self.max_tokens * 2).invoke(messages)
         usage: dict[str, Any] = getattr(resp, "usage_metadata", None) or {}
         return LLMResponse(
             content=str(resp.content),

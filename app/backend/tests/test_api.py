@@ -97,7 +97,7 @@ def test_capabilities(client):
     names = {t["name"] for t in caps}
     assert names == {
         "fuyao_quote_snapshot", "fuyao_valuation", "ifind_fin_indicator",
-        "ifind_fin_statement", "ifind_announcement", "ifind_news",
+        "ifind_fin_statement", "ifind_announcement",
     }
     assert all(t["returns"] == ["data", "source", "as_of", "unit", "caliber"] for t in caps)
 
