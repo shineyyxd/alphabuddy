@@ -75,8 +75,8 @@ export default function LeftSidebar({
     <aside className="w-60 shrink-0 bg-neutral-50 border-r border-neutral-100 flex flex-col min-h-0">
       {/* 产品名 */}
       <div className="px-4 pt-4 pb-3">
-        <h1 className="text-base font-bold tracking-wide text-neutral-900">研 Buddy</h1>
-        <p className="text-[11px] text-neutral-400 mt-0.5">透明 Agent 投研工作台</p>
+        <h1 className="text-base font-bold tracking-wide text-neutral-900">AlphaBuddy</h1>
+        <p className="text-[11px] text-neutral-400 mt-0.5">Every thesis deserves verifiable evidence.</p>
       </div>
 
       <div className="px-3">

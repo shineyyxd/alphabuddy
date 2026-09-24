@@ -64,7 +64,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
 
 
-app = FastAPI(title="研 Buddy 后端", lifespan=lifespan)
+app = FastAPI(title="AlphaBuddy 后端", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],

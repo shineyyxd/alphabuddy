@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "研 Buddy — 透明 Agent 工作台",
+  title: "AlphaBuddy — 透明 Agent 工作台",
   description: "面向投资研究者的透明 Agent 工作台。仅做事实研究，不构成投资建议。",
 };
 

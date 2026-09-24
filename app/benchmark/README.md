@@ -1,8 +1,8 @@
-# 研 Buddy 金融投研评测集（app/benchmark/）
+# AlphaBuddy 金融投研评测集（app/benchmark/）
 
 验证产品四件事：**取数正确、可追溯、合规拦截、显式降级**。思路对标财搭子团队开源的
 [Fans-Pilot/financial_rag_benchmark](https://github.com/caidazi/financial_rag_benchmark)，
-规模与评价方式适配"研 Buddy"产品形态。
+规模与评价方式适配"AlphaBuddy"产品形态。
 
 ## 结构
 

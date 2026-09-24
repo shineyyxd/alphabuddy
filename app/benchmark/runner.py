@@ -2,7 +2,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["httpx>=0.28"]
 # ///
-"""研 Buddy 评测 runner：通过后端 HTTP API 执行 cases.jsonl 并打分。
+"""AlphaBuddy 评测 runner：通过后端 HTTP API 执行 cases.jsonl 并打分。
 
 用法：
     uv run runner.py                      # 打 localhost:8000，输出 results.json + 终端表格

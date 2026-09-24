@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 研 Buddy 一键演示启动：后端(8000) + 前端生产(3000) + 临时公网隧道
+# AlphaBuddy 一键演示启动：后端(8000) + 前端生产(3000) + 临时公网隧道
 # 用法：app/scripts/demo.sh [stop]
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

@@ -22,7 +22,7 @@ export default function ArtifactPanel({
   onToggle,
 }: Props) {
   const exportMarkdown = () => {
-    const header = `# ${title ?? goal ?? "研究报告"}\n\n> 研 Buddy 生成 · 仅做事实研究，不构成投资建议\n\n`;
+    const header = `# ${title ?? goal ?? "研究报告"}\n\n> AlphaBuddy 生成 · 仅做事实研究，不构成投资建议\n\n`;
     const blob = new Blob([header + markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

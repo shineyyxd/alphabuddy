@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "product": "研 Buddy（透明 Agent 投资研究工作台）",
+  "product": "AlphaBuddy（透明 Agent 投资研究工作台）",
   "reference": "对标 Fans-Pilot/financial_rag_benchmark 的意图分类思路，规模与评价方式适配本产品（验证取数正确、可追溯、合规拦截、显式降级四件事）",
   "intents": [
     {

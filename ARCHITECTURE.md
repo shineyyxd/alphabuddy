@@ -1,4 +1,4 @@
-# 研 Buddy（题目 13：投资 X Buddy）架构蓝图与执行清单
+# AlphaBuddy（题目 13：投资 X Buddy）架构蓝图与执行清单
 
 > 用途：24 小时冲刺执行蓝图，可直接作为项目 AGENTS.md / README 底稿。
 > 架构来源：产品形态参考财搭子（supervisor 多智能体 + 上下文内多产物）；

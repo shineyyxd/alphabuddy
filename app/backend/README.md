@@ -1,4 +1,4 @@
-# 研 Buddy 后端
+# AlphaBuddy 后端
 
 面向投资研究者的透明 Agent 工作台后端。FastAPI + LangGraph（Supervisor → Planner → interrupt 审批 → Researcher → Reporter），SSE 流式，SQLite 检查点/审计，双数据源（扶摇 REST + iFinD MCP）三态降级（ok / missing_key / fixture）。
 

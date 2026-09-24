@@ -1,4 +1,4 @@
-# 研 Buddy — 前后端 API 契约（v1，开工冻结）
+# AlphaBuddy — 前后端 API 契约（v1，开工冻结）
 
 后端：FastAPI（Python 3.12，uv 管理），默认端口 8000，SSE 流式。
 前端：Next.js 14+（App Router）+ Tailwind，默认端口 3000，代理 /api → 8000。
